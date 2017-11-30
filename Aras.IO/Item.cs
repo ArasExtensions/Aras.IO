@@ -39,12 +39,12 @@ namespace Aras.IO
 
         internal byte[] GetBytes()
         {
-            return System.Text.Encoding.ASCII.GetBytes(this.Doc.OuterXml);
+            return System.Text.Encoding.ASCII.GetBytes(this.Node.OuterXml);
         }
 
-        internal String GetString()
+        public String GetString()
         {
-            return this.Doc.OuterXml;
+            return this.Node.OuterXml;
         }
 
         public String ID
