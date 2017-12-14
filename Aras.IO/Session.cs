@@ -82,9 +82,9 @@ namespace Aras.IO
                 if (this._vaultBaseURL == null)
                 {
                     Request request = this.Request(IO.Request.Operations.ApplyItem);
-                    Item user = request.NewItem("Vault", "get");
-                    user.Select = "vault_url";
-                    user.ID = this.UserID;
+                    Item vault = request.NewItem("Vault", "get");
+                    vault.Select = "vault_url";
+                    vault.ID = this.VaultID;
                     Response response = request.Execute();
 
                     if (!response.IsError)

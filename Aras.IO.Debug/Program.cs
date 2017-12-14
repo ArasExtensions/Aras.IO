@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Aras.IO.Example
 {
@@ -32,26 +33,14 @@ namespace Aras.IO.Example
     {
         static void Main(string[] args)
         {
-            Server server = new Server("http://localhost/InnovatorServer100SP4");
-            Database database = server.Database("CMB");
+            Server server = new Server("http://localhost/11SP11");
+            Database database = server.Database("11SP11_Development");
             Session session = database.Login("admin", Server.PasswordHash("innovator"));
 
-            Request request = session.Request(Request.Operations.GetItemNextStates);
-            Item item = request.NewItem("CMB_Quote", "get");
-            item.ID = "B31E56A0E380064299FEB3FF807520B6";
-
-            Response response = request.Execute();
-
-            Item tostate = response.Items.First().ToStates.First();
-
-            String nextstate = tostate.GetProperty("keyed_name");
-
-            Request promoterequest = session.Request(Request.Operations.PromoteItem);
-            Item promoteitem = promoterequest.NewItem("CMB_Quote", null);
-            promoteitem.ID = "B31E56A0E380064299FEB3FF807520B6";
-            promoteitem.SetProperty("state", nextstate);
-
-            Response promoteresponse = promoterequest.Execute();
+            using (FileStream sr = new FileStream("c:\\temp\\test.txt", FileMode.Open))
+            {
+                Response request = session.VaultWrite(sr, "test23.txt");
+            }
         }
     }
 }
