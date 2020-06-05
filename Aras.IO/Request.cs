@@ -43,7 +43,7 @@ namespace Aras.IO
 
         public String Username { get; private set; }
 
-        public String Password { get; private set; }
+        public String AccessToken { get; private set; }
 
         internal CookieContainer Cookies { get; private set; }
 
@@ -83,8 +83,7 @@ namespace Aras.IO
                     this._hTTPRequest.Headers.Add("Cache-Control", "no-cache");
                     this._hTTPRequest.Method = "POST";
                     this._hTTPRequest.ContentType = "text/xml; charset=utf-8";
-                    this._hTTPRequest.Headers.Add("AUTHPASSWORD", this.Password);
-                    this._hTTPRequest.Headers.Add("AUTHUSER", this.Username);
+                    this._hTTPRequest.Headers.Add("Authorization", "Bearer " + this.AccessToken);
                     this._hTTPRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
                     this._hTTPRequest.Headers.Add("DATABASE", this.Database.ID);
                     this._hTTPRequest.Headers.Add("SOAPACTION", this.Operation.ToString());
@@ -192,18 +191,18 @@ namespace Aras.IO
             this.Server = Session.Database.Server;
             this.Database = Session.Database;
             this.Username = Session.Username;
-            this.Password = Session.Password;
+            this.AccessToken = Session.AccessToken;
             this.ItemsCache = new List<Item>();
             this.Cookies = Session.Cookies;
         }
 
-        internal Request(Operations Operation, Database Database, String Username, String Password)
+        internal Request(Operations Operation, Database Database, String Username, String AccessToken)
         {
             this.Operation = Operation;
             this.Server = Database.Server;
             this.Database = Database;
             this.Username = Username;
-            this.Password = Password;
+            this.AccessToken = AccessToken;
             this.ItemsCache = new List<Item>();
             this.Cookies = new CookieContainer();
         }

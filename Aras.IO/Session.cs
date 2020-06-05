@@ -43,7 +43,7 @@ namespace Aras.IO
 
         public String Username { get; private set; }
 
-        public String Password { get; private set; }
+        public String AccessToken { get; private set; }
 
         public String UserID { get; private set; }
 
@@ -135,8 +135,7 @@ namespace Aras.IO
             request.Headers.Add("Cache-Control", "no-cache");
             request.Method = "POST";
             request.ContentType = "application/json; charset=utf-8";
-            request.Headers.Add("AUTHPASSWORD", this.Password);
-            request.Headers.Add("AUTHUSER", this.Username);
+            request.Headers.Add("Authorization", "Bearer " + this.AccessToken);
             request.Accept = "application/json; charset=utf-8";
             request.Headers.Add("DATABASE", this.Database.ID);
             request.Headers.Add("SOAPACTION", "GetFileDownloadToken");
@@ -227,11 +226,8 @@ namespace Aras.IO
             StringContent soapaction = new StringContent("ApplyItem");
             content.Add(soapaction, "SOAPACTION");
 
-            StringContent authuser = new StringContent(this.Username);
-            content.Add(authuser, "AUTHUSER");
-
-            StringContent password = new StringContent(this.Password);
-            content.Add(password, "AUTHPASSWORD");
+            StringContent password = new StringContent("Bearer " + this.AccessToken);
+            content.Add(password, "Authorization");
 
             StringContent database = new StringContent(this.Database.ID);
             content.Add(database, "DATABASE");
@@ -294,7 +290,7 @@ namespace Aras.IO
             this.URLCache = new Dictionary<String, String>();
             this.Database = Database;
             this.Username = Username;
-            this.Password = Password;
+            this.AccessToken = Password;
             this.Cookies = Cookies;
             this.UserID = Node.SelectSingleNode("id").InnerText;
             this.UserType = Node.SelectSingleNode("user_type").InnerText;

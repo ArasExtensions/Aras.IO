@@ -37,28 +37,30 @@ namespace Aras.IO
         private object SessionCacheLock = new object();
         private Dictionary<String, Session> SessionCache;
 
-        public Session Login(String Username, String Password)
+        public Session Login(String Username, String AccessToken)
         {
             lock (this.SessionCacheLock)
             {
                 if (!this.SessionCache.ContainsKey(Username))
                 {
-                    IO.Request request = new IO.Request(IO.Request.Operations.ValidateUser, this, Username, Password);
+                    IO.Request request = new IO.Request(IO.Request.Operations.ValidateUser, this, Username, AccessToken);
                     IO.Response response = request.Execute();
 
                     if (!response.IsError)
                     {
-                        this.SessionCache[Username] = new Session(this, response.Result, Username, Password, response.Cookies);
+                    // Store Cookies
+                    System.Net.CookieContainer Cookies = new System.Net.CookieContainer();
+                    this.SessionCache[Username] = new Session(this, response.Result, Username, AccessToken, Cookies);
                     }
                     else
                     {
-                        throw new Exceptions.ServerException(response);
+                      throw new Exceptions.ServerException(response);
                     }
                 }
                 else
                 {
                     // Check Password
-                    if (!this.SessionCache[Username].Password.Equals(Password))
+                    if (!this.SessionCache[Username].AccessToken.Equals(AccessToken))
                     {
                         throw new Exceptions.ArgumentException("Invalid Password");
                     }
