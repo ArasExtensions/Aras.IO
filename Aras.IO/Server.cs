@@ -48,6 +48,12 @@ namespace Aras.IO
                     try
                     {
                         this._uRL = new Uri(value).AbsoluteUri;
+                        this._serverURL = this._uRL + "/Server";
+                        this._apiURL = this._serverURL + "/InnovatorServer.aspx";
+                        this._authenticationBrokerURL = this._serverURL + "/AuthenticationBroker.asmx";
+                        this._dBListURL = this._serverURL + "/dblist.aspx";
+                        this._clientURL = this._uRL + "/Client";
+                        this._javascriptClientURL = this._clientURL + "/javascript";
                     }
                     catch (Exception e)
                     {
@@ -96,11 +102,6 @@ namespace Aras.IO
         {
             get
             {
-                if (this._serverURL == null)
-                {
-                    this._serverURL = this.URL + "/Server";
-                }
-
                 return this._serverURL;
             }
         }
@@ -110,11 +111,6 @@ namespace Aras.IO
         {
             get
             {
-                if (this._apiURL == null)
-                {
-                    this._apiURL = this.ServerURL + "/InnovatorServer.aspx";
-                }
-
                 return this._apiURL;
             }
         }
@@ -124,11 +120,6 @@ namespace Aras.IO
         {
             get
             {
-                if (this._authenticationBrokerURL == null)
-                {
-                    this._authenticationBrokerURL = this.ServerURL + "/AuthenticationBroker.asmx";
-                }
-
                 return this._authenticationBrokerURL;
             }
         }
@@ -138,11 +129,6 @@ namespace Aras.IO
         {
             get
             {
-                if (this._dBListURL == null)
-                {
-                    this._dBListURL = this.ServerURL + "/dblist.aspx";
-                }
-
                 return this._dBListURL;
             }
         }
@@ -152,11 +138,6 @@ namespace Aras.IO
         {
             get
             {
-                if (this._clientURL == null)
-                {
-                    this._clientURL = this.URL + "/Client";
-                }
-
                 return this._clientURL;
             }
         }
@@ -166,11 +147,6 @@ namespace Aras.IO
         {
             get
             {
-                if (this._javascriptClientURL == null)
-                {
-                    this._javascriptClientURL = this.ClientURL + "/javascript";
-                }
-
                 return this._javascriptClientURL;
             }
         }

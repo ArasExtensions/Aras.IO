@@ -47,57 +47,65 @@ namespace Aras.IO
 
         public String UserID { get; private set; }
 
+        private readonly object _vaultIDLock = new object();
         private String _vaultID;
         public String VaultID
         {
             get
             {
-                if (this._vaultID == null)
+                lock (this._vaultIDLock)
                 {
-                    Request request = this.Request(IO.Request.Operations.ApplyItem);
-                    Item user = request.NewItem("User", "get");
-                    user.Select = "default_vault";
-                    user.ID = this.UserID;
-                    Response response = request.Execute();
+                    if (this._vaultID == null)
+                    {
+                        Request request = this.Request(IO.Request.Operations.ApplyItem);
+                        Item user = request.NewItem("User", "get");
+                        user.Select = "default_vault";
+                        user.ID = this.UserID;
+                        Response response = request.Execute();
 
-                    if (!response.IsError)
-                    {
-                        this._vaultID = response.Items.First().GetProperty("default_vault");
+                        if (!response.IsError)
+                        {
+                            this._vaultID = response.Items.First().GetProperty("default_vault");
+                        }
+                        else
+                        {
+                            throw new Exceptions.ServerException(response);
+                        }
                     }
-                    else
-                    {
-                        throw new Exceptions.ServerException(response);
-                    }
+
+                    return this._vaultID;
                 }
-
-                return this._vaultID;
             }
         }
 
+        private readonly object _vaultBaseURLLock = new object();
         private String _vaultBaseURL;
         public String VaultBaseURL
         {
             get
             {
-                if (this._vaultBaseURL == null)
+                lock (this._vaultBaseURLLock)
                 {
-                    Request request = this.Request(IO.Request.Operations.ApplyItem);
-                    Item vault = request.NewItem("Vault", "get");
-                    vault.Select = "vault_url";
-                    vault.ID = this.VaultID;
-                    Response response = request.Execute();
+                    if (this._vaultBaseURL == null)
+                    {
+                        Request request = this.Request(IO.Request.Operations.ApplyItem);
+                        Item vault = request.NewItem("Vault", "get");
+                        vault.Select = "vault_url";
+                        vault.ID = this.VaultID;
+                        Response response = request.Execute();
 
-                    if (!response.IsError)
-                    {
-                        this._vaultBaseURL = response.Items.First().GetProperty("vault_url");
+                        if (!response.IsError)
+                        {
+                            this._vaultBaseURL = response.Items.First().GetProperty("vault_url");
+                        }
+                        else
+                        {
+                            throw new Exceptions.ServerException(response);
+                        }
                     }
-                    else
-                    {
-                        throw new Exceptions.ServerException(response);
-                    }
+
+                    return this._vaultBaseURL;
                 }
-
-                return this._vaultBaseURL;
             }
         }
 
@@ -170,15 +178,19 @@ namespace Aras.IO
             }
         }
 
+        private readonly object URLCacheLock = new object();
         private Dictionary<String, String> URLCache;
         public String VaultURL(String ID, String Filename)
         {
-            if (this.URLCache.ContainsKey(ID))
+            lock (this.URLCacheLock)
             {
-                this.URLCache[ID] = this.VaultBaseURL + "?dbname=" + this.Database.ID + "&fileId=" + ID + "&fileName=" + HttpUtility.UrlEncode(Filename) + "&vaultId=" + this.VaultID + "&token=" + this.DownloadToken(ID);
-            }
+                if (this.URLCache.ContainsKey(ID))
+                {
+                    this.URLCache[ID] = this.VaultBaseURL + "?dbname=" + this.Database.ID + "&fileId=" + ID + "&fileName=" + HttpUtility.UrlEncode(Filename) + "&vaultId=" + this.VaultID + "&token=" + this.DownloadToken(ID);
+                }
 
-            return this.URLCache[ID];
+                return this.URLCache[ID];
+            }
         }
 
         public void VaultRead(String ID, String Filename, Stream Output)
