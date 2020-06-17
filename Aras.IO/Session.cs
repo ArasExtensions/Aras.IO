@@ -43,61 +43,69 @@ namespace Aras.IO
 
         public String Username { get; private set; }
 
-        public String Password { get; private set; }
+        public String AccessToken { get; private set; }
 
         public String UserID { get; private set; }
 
+        private readonly object _vaultIDLock = new object();
         private String _vaultID;
         public String VaultID
         {
             get
             {
-                if (this._vaultID == null)
+                lock (this._vaultIDLock)
                 {
-                    Request request = this.Request(IO.Request.Operations.ApplyItem);
-                    Item user = request.NewItem("User", "get");
-                    user.Select = "default_vault";
-                    user.ID = this.UserID;
-                    Response response = request.Execute();
+                    if (this._vaultID == null)
+                    {
+                        Request request = this.Request(IO.Request.Operations.ApplyItem);
+                        Item user = request.NewItem("User", "get");
+                        user.Select = "default_vault";
+                        user.ID = this.UserID;
+                        Response response = request.Execute();
 
-                    if (!response.IsError)
-                    {
-                        this._vaultID = response.Items.First().GetProperty("default_vault");
+                        if (!response.IsError)
+                        {
+                            this._vaultID = response.Items.First().GetProperty("default_vault");
+                        }
+                        else
+                        {
+                            throw new Exceptions.ServerException(response);
+                        }
                     }
-                    else
-                    {
-                        throw new Exceptions.ServerException(response);
-                    }
+
+                    return this._vaultID;
                 }
-
-                return this._vaultID;
             }
         }
 
+        private readonly object _vaultBaseURLLock = new object();
         private String _vaultBaseURL;
         public String VaultBaseURL
         {
             get
             {
-                if (this._vaultBaseURL == null)
+                lock (this._vaultBaseURLLock)
                 {
-                    Request request = this.Request(IO.Request.Operations.ApplyItem);
-                    Item vault = request.NewItem("Vault", "get");
-                    vault.Select = "vault_url";
-                    vault.ID = this.VaultID;
-                    Response response = request.Execute();
+                    if (this._vaultBaseURL == null)
+                    {
+                        Request request = this.Request(IO.Request.Operations.ApplyItem);
+                        Item vault = request.NewItem("Vault", "get");
+                        vault.Select = "vault_url";
+                        vault.ID = this.VaultID;
+                        Response response = request.Execute();
 
-                    if (!response.IsError)
-                    {
-                        this._vaultBaseURL = response.Items.First().GetProperty("vault_url");
+                        if (!response.IsError)
+                        {
+                            this._vaultBaseURL = response.Items.First().GetProperty("vault_url");
+                        }
+                        else
+                        {
+                            throw new Exceptions.ServerException(response);
+                        }
                     }
-                    else
-                    {
-                        throw new Exceptions.ServerException(response);
-                    }
+
+                    return this._vaultBaseURL;
                 }
-
-                return this._vaultBaseURL;
             }
         }
 
@@ -135,8 +143,7 @@ namespace Aras.IO
             request.Headers.Add("Cache-Control", "no-cache");
             request.Method = "POST";
             request.ContentType = "application/json; charset=utf-8";
-            request.Headers.Add("AUTHPASSWORD", this.Password);
-            request.Headers.Add("AUTHUSER", this.Username);
+            request.Headers.Add("Authorization", "Bearer " + this.AccessToken);
             request.Accept = "application/json; charset=utf-8";
             request.Headers.Add("DATABASE", this.Database.ID);
             request.Headers.Add("SOAPACTION", "GetFileDownloadToken");
@@ -171,15 +178,19 @@ namespace Aras.IO
             }
         }
 
+        private readonly object URLCacheLock = new object();
         private Dictionary<String, String> URLCache;
         public String VaultURL(String ID, String Filename)
         {
-            if (this.URLCache.ContainsKey(ID))
+            lock (this.URLCacheLock)
             {
-                this.URLCache[ID] = this.VaultBaseURL + "?dbname=" + this.Database.ID + "&fileId=" + ID + "&fileName=" + HttpUtility.UrlEncode(Filename) + "&vaultId=" + this.VaultID + "&token=" + this.DownloadToken(ID);
-            }
+                if (this.URLCache.ContainsKey(ID))
+                {
+                    this.URLCache[ID] = this.VaultBaseURL + "?dbname=" + this.Database.ID + "&fileId=" + ID + "&fileName=" + HttpUtility.UrlEncode(Filename) + "&vaultId=" + this.VaultID + "&token=" + this.DownloadToken(ID);
+                }
 
-            return this.URLCache[ID];
+                return this.URLCache[ID];
+            }
         }
 
         public void VaultRead(String ID, String Filename, Stream Output)
@@ -227,11 +238,8 @@ namespace Aras.IO
             StringContent soapaction = new StringContent("ApplyItem");
             content.Add(soapaction, "SOAPACTION");
 
-            StringContent authuser = new StringContent(this.Username);
-            content.Add(authuser, "AUTHUSER");
-
-            StringContent password = new StringContent(this.Password);
-            content.Add(password, "AUTHPASSWORD");
+            StringContent password = new StringContent("Bearer " + this.AccessToken);
+            content.Add(password, "Authorization");
 
             StringContent database = new StringContent(this.Database.ID);
             content.Add(database, "DATABASE");
@@ -294,7 +302,7 @@ namespace Aras.IO
             this.URLCache = new Dictionary<String, String>();
             this.Database = Database;
             this.Username = Username;
-            this.Password = Password;
+            this.AccessToken = Password;
             this.Cookies = Cookies;
             this.UserID = Node.SelectSingleNode("id").InnerText;
             this.UserType = Node.SelectSingleNode("user_type").InnerText;
