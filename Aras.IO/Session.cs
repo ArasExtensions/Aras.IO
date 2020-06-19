@@ -45,6 +45,24 @@ namespace Aras.IO
 
         public String UserID { get; private set; }
 
+        internal void UpdateAccesToken(String AccessToken)
+        {
+            if (!this.AccessToken.Equals(AccessToken))
+            {
+                IO.Request request = new IO.Request(IO.Request.Operations.ValidateUser, this.Database, this.Username, AccessToken);
+                IO.Response response = request.Execute();
+
+                if (!response.IsError)
+                {
+                    this.AccessToken = AccessToken;
+                }
+                else
+                {
+                    throw new Exceptions.ServerException(response);
+                }
+            }
+        }
+
         private readonly object _vaultIDLock = new object();
         private String _vaultID;
         public String VaultID

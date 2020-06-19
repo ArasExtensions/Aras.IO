@@ -57,11 +57,7 @@ namespace Aras.IO
                 }
                 else
                 {
-                    // Check Password
-                    if (!this.SessionCache[Username].AccessToken.Equals(AccessToken))
-                    {
-                        throw new Exceptions.ArgumentException("Invalid Password");
-                    }
+                    this.SessionCache[Username].UpdateAccesToken(AccessToken);
                 }
 
                 return this.SessionCache[Username];
