@@ -48,13 +48,11 @@ namespace Aras.IO
 
                     if (!response.IsError)
                     {
-                    // Store Cookies
-                    System.Net.CookieContainer Cookies = new System.Net.CookieContainer();
-                    this.SessionCache[Username] = new Session(this, response.Result, Username, AccessToken, Cookies);
+                        this.SessionCache[Username] = new Session(this, response.Result, Username, AccessToken);
                     }
                     else
                     {
-                      throw new Exceptions.ServerException(response);
+                        throw new Exceptions.ServerException(response);
                     }
                 }
                 else

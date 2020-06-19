@@ -193,7 +193,6 @@ namespace Aras.IO
             this.Username = Session.Username;
             this.AccessToken = Session.AccessToken;
             this.ItemsCache = new List<Item>();
-            this.Cookies = Session.Cookies;
         }
 
         internal Request(Operations Operation, Database Database, String Username, String AccessToken)

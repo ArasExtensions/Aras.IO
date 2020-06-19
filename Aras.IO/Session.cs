@@ -39,8 +39,6 @@ namespace Aras.IO
 
         public Database Database { get; private set; }
 
-        internal CookieContainer Cookies { get; private set; }
-
         public String Username { get; private set; }
 
         public String AccessToken { get; private set; }
@@ -137,7 +135,6 @@ namespace Aras.IO
 
             String url = this.Database.Server.AuthenticationBrokerURL + "/GetFileDownloadToken?rnd=" + this.DownloadRandom().ToString();
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.CookieContainer = this.Cookies;
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             request.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
             request.Headers.Add("Cache-Control", "no-cache");
@@ -161,9 +158,6 @@ namespace Aras.IO
 
             using (HttpWebResponse webresponse = (HttpWebResponse)request.GetResponse())
             {
-                // Store Cookies
-                this.Cookies.Add(webresponse.Cookies);
-
                 using (Stream result = webresponse.GetResponseStream())
                 {
                     String resultstring = "";
@@ -196,7 +190,6 @@ namespace Aras.IO
         public void VaultRead(String ID, String Filename, Stream Output)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.VaultURL(ID, Filename));
-            request.CookieContainer = this.Cookies;
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             request.CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.NoCacheNoStore);
             request.Headers.Add("Cache-Control", "no-cache");
@@ -270,7 +263,6 @@ namespace Aras.IO
 
             // Post Request to Vault Server
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(this.VaultBaseURL);
-            request.CookieContainer = this.Cookies;
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             request.ContentType = "multipart/form-data; boundary=" + contentboundary;
             request.Method = "POST";
@@ -296,14 +288,13 @@ namespace Aras.IO
             return response;
         }
 
-        internal Session(Database Database, XmlNode Node , String Username, String Password, CookieContainer Cookies)
+        internal Session(Database Database, XmlNode Node , String Username, String Password)
         {
             this.Random = new Random();
             this.URLCache = new Dictionary<String, String>();
             this.Database = Database;
             this.Username = Username;
             this.AccessToken = Password;
-            this.Cookies = Cookies;
             this.UserID = Node.SelectSingleNode("id").InnerText;
             this.UserType = Node.SelectSingleNode("user_type").InnerText;
         }
