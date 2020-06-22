@@ -48,22 +48,16 @@ namespace Aras.IO
 
                     if (!response.IsError)
                     {
-                    // Store Cookies
-                    System.Net.CookieContainer Cookies = new System.Net.CookieContainer();
-                    this.SessionCache[Username] = new Session(this, response.Result, Username, AccessToken, Cookies);
+                        this.SessionCache[Username] = new Session(this, response.Result, Username, AccessToken);
                     }
                     else
                     {
-                      throw new Exceptions.ServerException(response);
+                        throw new Exceptions.ServerException(response);
                     }
                 }
                 else
                 {
-                    // Check Password
-                    if (!this.SessionCache[Username].AccessToken.Equals(AccessToken))
-                    {
-                        throw new Exceptions.ArgumentException("Invalid Password");
-                    }
+                    this.SessionCache[Username].UpdateAccesToken(AccessToken);
                 }
 
                 return this.SessionCache[Username];
