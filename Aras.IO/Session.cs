@@ -45,7 +45,7 @@ namespace Aras.IO
 
         public String UserID { get; private set; }
 
-        internal void UpdateAccesToken(String AccessToken)
+        public void UpdateAccesToken(String AccessToken)
         {
             if (!this.AccessToken.Equals(AccessToken))
             {
